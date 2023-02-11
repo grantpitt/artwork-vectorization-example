@@ -1,7 +1,7 @@
 from PIL import Image, ImageOps
 import requests
 from transformers import CLIPProcessor, CLIPModel
-import matplotlib.pyplot as plt
+import numpy as np
 
 model_id = "openai/clip-vit-large-patch14-336"
 
@@ -19,7 +19,12 @@ def preprocess_image(image):
 def compute_image_vector(image):
     inputs = processor(images=image, return_tensors="pt", padding=True)
     vectors = model.get_image_features(**inputs)
-    return vectors.cpu().detach().numpy()[0].tolist()
+    vector = vectors.cpu().detach().numpy()[0]
+
+    # Normalize the vector (better for similarity search)
+    vector /= np.linalg.norm(vector)
+
+    return vector.tolist()
 
 
 # An example of downloading an image and computing its vector
